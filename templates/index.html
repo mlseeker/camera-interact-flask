@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>GET VIDEO</title>
+    <meta charset="utf-8">
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.js"></script>
+
+</head>
+<body>
+<input type="button" title="开启摄像头" value="开启摄像头" onclick="getMedia()"/>
+<video id="video" width="300px" height="300px" autoplay="autoplay"></video>
+<canvas id="canvas" width="300px" height="300px"></canvas>
+<button id="snap">拍照</button>
+
+<script>
+    function getMedia() {
+        let constraints = {
+            video: {width: 300, height: 300},
+            audio: false
+        };
+        let video = document.getElementById("video");
+        let promise = navigator.mediaDevices.getUserMedia(constraints);
+        promise.then(function (MediaStream) {
+            video.srcObject = MediaStream;
+            video.play();
+        });
+    }
+
+    $(document).ready(function () {
+        $("#snap").click(function () {
+            let video = document.getElementById("video");
+            let canvas = document.getElementById("canvas");
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 300, 300);
+            imageData = canvas.toDataURL("image/jpg");
+            var base64Data = imageData.split(",")[1];
+            var formData = new FormData();
+            formData.append("image", base64Data);
+            {#alert(base64Data)#}
+            $.ajax({
+                url: "upload",
+                type: "POST",
+                data: formData,
+                async: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    {#多张图片传输#}
+                    {#jdata = eval('(' + data + ')')#}
+                    {#for (var key in jdata) {#}
+                    {#    alert(jdata[key]);#}
+                    {#}#}
+                    var img = new Image()
+                    img.src = "data:image/jpg;base64," + data
+                    document.body.appendChild(img)
+
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
